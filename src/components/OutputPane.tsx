@@ -6,11 +6,8 @@ import {
   Code,
   FileText,
   AlignLeft,
-  Sparkles,
-  BarChart3,
-  ExternalLink,
+  ArrowRight,
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
 import { SanitizerResult } from '../types';
 import { copyRichText, copyPlainText } from '../utils/clipboard';
 
@@ -20,7 +17,7 @@ interface OutputPaneProps {
   onOpenStats: () => void;
 }
 
-type TabType = 'preview' | 'html' | 'markdown' | 'text';
+type TabType = 'preview' | 'markdown' | 'html' | 'text';
 
 export const OutputPane: React.FC<OutputPaneProps> = ({
   sanitized,
@@ -33,29 +30,15 @@ export const OutputPane: React.FC<OutputPaneProps> = ({
   const { cleanHtml, cleanText, cleanMarkdown, stats } = sanitized;
   const hasContent = Boolean(cleanHtml && cleanHtml.trim());
 
-  const triggerConfetti = () => {
-    try {
-      confetti({
-        particleCount: 45,
-        spread: 60,
-        origin: { y: 0.8 },
-        colors: ['#6366f1', '#a855f7', '#3b82f6', '#10b981'],
-      });
-    } catch {
-      // Ignore if confetti fails
-    }
-  };
-
   const handleCopyFormatted = async () => {
     if (!hasContent) return;
     const ok = await copyRichText(cleanHtml, cleanText);
     if (ok) {
       setCopiedFormat('formatted');
-      setTimeout(() => setCopiedFormat(null), 2000);
-      triggerConfetti();
-      onShowToast('Copied formatted rich text! Ready to paste into Docs or Word.', 'success');
+      setTimeout(() => setCopiedFormat(null), 1800);
+      onShowToast('Copied formatted text', 'info');
     } else {
-      onShowToast('Could not access clipboard.', 'error');
+      onShowToast('Clipboard access denied', 'error');
     }
   };
 
@@ -64,8 +47,8 @@ export const OutputPane: React.FC<OutputPaneProps> = ({
     const ok = await copyPlainText(cleanMarkdown);
     if (ok) {
       setCopiedFormat('markdown');
-      setTimeout(() => setCopiedFormat(null), 2000);
-      onShowToast('Copied clean Markdown!', 'success');
+      setTimeout(() => setCopiedFormat(null), 1800);
+      onShowToast('Copied Markdown', 'info');
     }
   };
 
@@ -74,8 +57,8 @@ export const OutputPane: React.FC<OutputPaneProps> = ({
     const ok = await copyPlainText(cleanHtml);
     if (ok) {
       setCopiedFormat('html');
-      setTimeout(() => setCopiedFormat(null), 2000);
-      onShowToast('Copied clean HTML!', 'success');
+      setTimeout(() => setCopiedFormat(null), 1800);
+      onShowToast('Copied HTML', 'info');
     }
   };
 
@@ -84,107 +67,107 @@ export const OutputPane: React.FC<OutputPaneProps> = ({
     const ok = await copyPlainText(cleanText);
     if (ok) {
       setCopiedFormat('text');
-      setTimeout(() => setCopiedFormat(null), 2000);
-      onShowToast('Copied plain text!', 'success');
+      setTimeout(() => setCopiedFormat(null), 1800);
+      onShowToast('Copied plain text', 'info');
     }
   };
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden transition-colors">
+    <div className="flex flex-col h-full bg-white dark:bg-[#19191b] border border-neutral-200/80 dark:border-neutral-800/80 rounded-xl overflow-hidden transition-colors">
       {/* Pane Header Tabs */}
-      <div className="px-4 py-2.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 flex flex-wrap items-center justify-between gap-2">
-        {/* View Tabs */}
-        <div className="flex items-center gap-1 bg-slate-200/70 dark:bg-slate-800 p-1 rounded-xl">
+      <div className="px-4 py-2 border-b border-neutral-200/80 dark:border-neutral-800/80 bg-neutral-50/50 dark:bg-neutral-900/30 flex flex-wrap items-center justify-between gap-2">
+        {/* Tabs */}
+        <div className="flex items-center gap-1">
           <button
             onClick={() => setActiveTab('preview')}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs transition-colors cursor-pointer ${
               activeTab === 'preview'
-                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                ? 'bg-neutral-200/70 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-medium'
+                : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
             }`}
           >
-            <Eye className="w-3.5 h-3.5" />
-            <span>Visual Preview</span>
+            <Eye className="w-3.5 h-3.5 stroke-[1.75]" />
+            <span>Preview</span>
           </button>
 
           <button
             onClick={() => setActiveTab('markdown')}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs transition-colors cursor-pointer ${
               activeTab === 'markdown'
-                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                ? 'bg-neutral-200/70 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-medium'
+                : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
             }`}
           >
-            <FileText className="w-3.5 h-3.5" />
+            <FileText className="w-3.5 h-3.5 stroke-[1.75]" />
             <span>Markdown</span>
           </button>
 
           <button
             onClick={() => setActiveTab('html')}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs transition-colors cursor-pointer ${
               activeTab === 'html'
-                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                ? 'bg-neutral-200/70 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-medium'
+                : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
             }`}
           >
-            <Code className="w-3.5 h-3.5" />
+            <Code className="w-3.5 h-3.5 stroke-[1.75]" />
             <span>HTML</span>
           </button>
 
           <button
             onClick={() => setActiveTab('text')}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs transition-colors cursor-pointer ${
               activeTab === 'text'
-                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                ? 'bg-neutral-200/70 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 font-medium'
+                : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
             }`}
           >
-            <AlignLeft className="w-3.5 h-3.5" />
-            <span>Plain Text</span>
+            <AlignLeft className="w-3.5 h-3.5 stroke-[1.75]" />
+            <span>Plain</span>
           </button>
         </div>
 
-        {/* Copy Actions Group */}
-        <div className="flex items-center gap-2">
-          {/* Main Primary CTA: Copy Formatted */}
+        {/* Copy CTAs */}
+        <div className="flex items-center gap-1.5">
+          {/* Main Primary CTA: Quiet, high contrast, solid button */}
           <button
             disabled={!hasContent}
             onClick={handleCopyFormatted}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-sm ${
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
               hasContent
-                ? 'bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-indigo-500/25 ring-2 ring-indigo-500/20 active:scale-95'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
+                ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-white'
+                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 cursor-not-allowed'
             }`}
-            title="Copies rich text to clipboard (preserves bold, lists, headings in Docs & Word)"
+            title="Copy rich formatted text"
           >
             {copiedFormat === 'formatted' ? (
               <>
-                <Check className="w-3.5 h-3.5 stroke-[3]" />
-                <span>Copied Rich Text!</span>
+                <Check className="w-3.5 h-3.5 stroke-[2]" />
+                <span>Copied</span>
               </>
             ) : (
               <>
-                <Copy className="w-3.5 h-3.5" />
-                <span>Copy Formatted</span>
+                <Copy className="w-3.5 h-3.5 stroke-[1.75]" />
+                <span>Copy formatted</span>
               </>
             )}
           </button>
 
-          {/* Quick Dropdown or Secondary Copy Buttons */}
+          {/* Secondary format actions */}
           <div className="hidden sm:flex items-center gap-1">
             <button
               disabled={!hasContent}
               onClick={handleCopyMarkdown}
               title="Copy as Markdown"
-              className="text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 cursor-pointer font-medium"
+              className="text-xs px-2 py-1 rounded-md border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 cursor-pointer font-mono"
             >
               {copiedFormat === 'markdown' ? '✓ MD' : 'MD'}
             </button>
             <button
               disabled={!hasContent}
               onClick={handleCopyHtml}
-              title="Copy raw HTML"
-              className="text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 cursor-pointer font-medium"
+              title="Copy clean HTML"
+              className="text-xs px-2 py-1 rounded-md border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 cursor-pointer font-mono"
             >
               {copiedFormat === 'html' ? '✓ HTML' : 'HTML'}
             </button>
@@ -192,91 +175,78 @@ export const OutputPane: React.FC<OutputPaneProps> = ({
               disabled={!hasContent}
               onClick={handleCopyPlain}
               title="Copy plain text"
-              className="text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 cursor-pointer font-medium"
+              className="text-xs px-2 py-1 rounded-md border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 cursor-pointer font-mono"
             >
-              {copiedFormat === 'text' ? '✓ Text' : 'Text'}
+              {copiedFormat === 'text' ? '✓ Plain' : 'Plain'}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Reduction Stats Bar */}
+      {/* Telemetry bar: quiet, monospace, exact */}
       {hasContent && (
-        <div className="px-4 py-2 bg-indigo-50/60 dark:bg-indigo-950/30 border-b border-indigo-100 dark:border-indigo-900/50 flex flex-wrap items-center justify-between gap-2 text-xs">
-          <div className="flex items-center gap-3">
-            <span className="font-semibold text-indigo-900 dark:text-indigo-200 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-              <span>Cleaned: {stats.cleanedLength.toLocaleString()} chars</span>
-            </span>
-
+        <div className="px-4 py-1.5 bg-neutral-50/80 dark:bg-neutral-900/50 border-b border-neutral-100 dark:border-neutral-800/80 flex items-center justify-between text-[11px] font-mono text-neutral-500 dark:text-neutral-400">
+          <div className="flex items-center gap-2 tabular-nums">
+            <span>{stats.cleanedLength.toLocaleString()} chars</span>
             {stats.reductionPercentage > 0 && (
-              <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 font-bold text-[11px]">
-                -{stats.reductionPercentage}% bloated junk stripped
-              </span>
+              <>
+                <span>·</span>
+                <span className="text-neutral-700 dark:text-neutral-300 font-medium">
+                  {stats.reductionPercentage}% smaller
+                </span>
+                <span>·</span>
+                <span>{stats.charactersSaved.toLocaleString()} removed</span>
+              </>
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {stats.stylesStrippedCount > 0 && (
-              <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                {stats.stylesStrippedCount} style rules stripped
+              <span className="tabular-nums">
+                {stats.stylesStrippedCount} styles removed
               </span>
             )}
-
-            {stats.trackingParamsRemovedCount > 0 && (
-              <span className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
-                {stats.trackingParamsRemovedCount} tracking tags removed
-              </span>
-            )}
-
             <button
               onClick={onOpenStats}
-              className="flex items-center gap-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer ml-1"
+              className="hover:text-neutral-900 dark:hover:text-neutral-200 underline cursor-pointer"
             >
-              <BarChart3 className="w-3 h-3" />
-              <span>Details</span>
+              Report
             </button>
           </div>
         </div>
       )}
 
-      {/* Pane Content View */}
-      <div className="flex-1 p-4 overflow-y-auto min-h-[360px] max-h-[620px]">
+      {/* Content View */}
+      <div className="flex-1 p-4 overflow-y-auto min-h-[360px] max-h-[600px]">
         {!hasContent ? (
-          <div className="h-full flex flex-col items-center justify-center p-8 text-center text-slate-400 select-none">
-            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 mb-3">
-              <Eye className="w-6 h-6" />
-            </div>
-            <h4 className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+          <div className="h-full flex flex-col items-center justify-center p-8 text-center text-neutral-400 select-none">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
               Clean preview will appear here
-            </h4>
-            <p className="text-xs text-slate-400 dark:text-slate-500 max-w-xs mt-1">
-              Paste messy text into the left pane to watch PasteMagic instantly strip unwanted styles according to your rules.
             </p>
           </div>
         ) : (
           <>
             {activeTab === 'preview' && (
               <div
-                className="sanitized-preview prose dark:prose-invert max-w-none text-slate-800 dark:text-slate-100"
+                className="sanitized-preview text-neutral-900 dark:text-neutral-100"
                 dangerouslySetInnerHTML={{ __html: cleanHtml }}
               />
             )}
 
             {activeTab === 'markdown' && (
-              <pre className="font-mono text-xs text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-950 p-3 rounded-xl overflow-x-auto whitespace-pre-wrap leading-relaxed border border-slate-200 dark:border-slate-800">
+              <pre className="font-mono text-xs text-neutral-800 dark:text-neutral-200 bg-neutral-50 dark:bg-neutral-900/70 p-3 rounded-lg overflow-x-auto whitespace-pre-wrap leading-relaxed border border-neutral-200/60 dark:border-neutral-800/60">
                 {cleanMarkdown}
               </pre>
             )}
 
             {activeTab === 'html' && (
-              <pre className="font-mono text-xs text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-950 p-3 rounded-xl overflow-x-auto whitespace-pre-wrap leading-relaxed border border-slate-200 dark:border-slate-800">
+              <pre className="font-mono text-xs text-neutral-800 dark:text-neutral-200 bg-neutral-50 dark:bg-neutral-900/70 p-3 rounded-lg overflow-x-auto whitespace-pre-wrap leading-relaxed border border-neutral-200/60 dark:border-neutral-800/60">
                 {cleanHtml}
               </pre>
             )}
 
             {activeTab === 'text' && (
-              <pre className="font-sans text-xs text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-950 p-3 rounded-xl overflow-x-auto whitespace-pre-wrap leading-relaxed border border-slate-200 dark:border-slate-800">
+              <pre className="font-mono text-xs text-neutral-800 dark:text-neutral-200 bg-neutral-50 dark:bg-neutral-900/70 p-3 rounded-lg overflow-x-auto whitespace-pre-wrap leading-relaxed border border-neutral-200/60 dark:border-neutral-800/60">
                 {cleanText}
               </pre>
             )}
@@ -284,17 +254,16 @@ export const OutputPane: React.FC<OutputPaneProps> = ({
         )}
       </div>
 
-      {/* Pane Footer Info */}
-      <div className="px-4 py-2 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/40 dark:bg-slate-800/20 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
-        <div className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-          <span>Ready for Google Docs, Microsoft 365, Notion, Slack & Email</span>
-        </div>
-        <div>
-          <span>Shortcut: <kbd className="font-mono px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px]">Ctrl+Enter</kbd> to copy</span>
-        </div>
+      {/* Footer */}
+      <div className="px-4 py-2 border-t border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/30 dark:bg-neutral-900/20 flex items-center justify-between text-[11px] text-neutral-400 font-mono">
+        <span>Ready for Word, Docs, Notion & Slack</span>
+        <span>
+          <kbd className="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-[10px]">
+            Ctrl+Enter
+          </kbd>{' '}
+          to copy
+        </span>
       </div>
     </div>
   );
 };
-

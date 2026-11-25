@@ -114,3 +114,4 @@ describe('PasteMagic Sanitizer Engine', () => {
     expect(res.cleanText).toContain('Bold text with a link');
   });
 });
+

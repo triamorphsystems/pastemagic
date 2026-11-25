@@ -73,3 +73,4 @@ flowchart LR
    - Dangerous URL schemes (`javascript:`, `vbscript:`, `data:`) on anchor tags are neutralized.
 3. **Reactive Re-Sanitization**:
    - React's `useMemo` dynamically re-computes the cleaned output whenever the user pastes new content or toggles any filter rule, providing instant 0ms latency visual feedback.
+

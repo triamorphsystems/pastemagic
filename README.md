@@ -113,3 +113,4 @@ Using **Notepad** is the old-school workaround, but it acts like a sledgehammer:
 ## 📜 License
 
 MIT License. Designed and crafted with precision.
+

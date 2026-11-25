@@ -5,7 +5,6 @@ export interface Preset {
   name: string;
   description: string;
   icon: string;
-  badge?: string;
   options: FilterOptions;
 }
 
@@ -13,7 +12,7 @@ export const DEFAULT_FILTER_OPTIONS: FilterOptions = {
   // Inline Emphasis
   keepBold: true,
   keepItalic: true,
-  keepUnderline: false, // Underlines in docs often confuse users with links
+  keepUnderline: false,
   keepStrikethrough: true,
   keepSubSuper: true,
   keepInlineCode: true,
@@ -58,10 +57,9 @@ export const DEFAULT_FILTER_OPTIONS: FilterOptions = {
 export const PRESETS: Preset[] = [
   {
     id: 'doc-ready',
-    name: 'Doc Ready',
-    description: 'Keep bold, italics, lists, headings & tables. Strip colors, ugly fonts & backgrounds.',
+    name: 'Doc ready',
+    description: 'Keep bold, italics, lists, headings and tables. Strip fonts, sizes and background highlights.',
     icon: 'FileText',
-    badge: 'Popular',
     options: {
       ...DEFAULT_FILTER_OPTIONS,
       keepBold: true,
@@ -81,8 +79,8 @@ export const PRESETS: Preset[] = [
   },
   {
     id: 'semantic-clean',
-    name: 'Pure Semantic',
-    description: '100% clean HTML tags (H1-H6, p, ul, ol, a, b, i) with zero inline CSS or classes.',
+    name: 'Semantic only',
+    description: 'Clean HTML tags with zero inline CSS or classes.',
     icon: 'Code2',
     options: {
       ...DEFAULT_FILTER_OPTIONS,
@@ -101,8 +99,8 @@ export const PRESETS: Preset[] = [
   },
   {
     id: 'minimalist-notes',
-    name: 'Minimal Notes',
-    description: 'Keep only basic bold, italics, bullet lists, and clean links. Flatten headers to bold.',
+    name: 'Minimal notes',
+    description: 'Keep only basic bold, italics, bullet lists, and links. Flatten headers to bold.',
     icon: 'Feather',
     options: {
       ...DEFAULT_FILTER_OPTIONS,
@@ -121,8 +119,8 @@ export const PRESETS: Preset[] = [
   },
   {
     id: 'links-only',
-    name: 'Text + Links',
-    description: 'Strip all bold, italics, fonts & formatting, but preserve clean hyperlinks.',
+    name: 'Text and links',
+    description: 'Strip all formatting while preserving hyperlinks.',
     icon: 'Link',
     options: {
       ...DEFAULT_FILTER_OPTIONS,
@@ -142,8 +140,8 @@ export const PRESETS: Preset[] = [
   },
   {
     id: 'plain-ultra-clean',
-    name: 'Sanitized Plain',
-    description: 'Plain text with straightened quotes, collapsed blank lines, and zero-width chars removed.',
+    name: 'Plain text',
+    description: 'Plain text with straightened quotes and zero-width characters removed.',
     icon: 'Type',
     options: {
       ...DEFAULT_FILTER_OPTIONS,
@@ -172,4 +170,3 @@ export const PRESETS: Preset[] = [
     },
   },
 ];
-

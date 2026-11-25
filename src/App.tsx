@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { FilterOptions, SanitizerResult } from './types';
-import { DEFAULT_FILTER_OPTIONS, PRESETS, Preset } from './utils/presets';
+import { DEFAULT_FILTER_OPTIONS, Preset } from './utils/presets';
 import { sanitizeContent } from './utils/sanitizer';
 import { SAMPLES } from './utils/samples';
 import { copyRichText, copyPlainText } from './utils/clipboard';
@@ -13,16 +13,6 @@ import { StatsModal } from './components/StatsModal';
 import { HistoryDrawer, HistoryItem } from './components/HistoryDrawer';
 import { ShortcutsModal } from './components/ShortcutsModal';
 import { Toast, ToastMessage } from './components/Toast';
-import {
-  FileSpreadsheet,
-  CheckCircle,
-  XCircle,
-  FileText,
-  ShieldCheck,
-  Zap,
-  ArrowRight,
-  Sparkles,
-} from 'lucide-react';
 
 export const App: React.FC = () => {
   // Theme state
@@ -98,7 +88,6 @@ export const App: React.FC = () => {
       };
 
       setHistory((prev) => {
-        // Prevent duplicate immediate paste
         if (prev.length > 0 && prev[0].snippet === plainSnippet) return prev;
         const updated = [newItem, ...prev.slice(0, 9)];
         localStorage.setItem('pastemagic_history', JSON.stringify(updated));
@@ -113,7 +102,7 @@ export const App: React.FC = () => {
   const handleSelectPreset = (preset: Preset) => {
     setCurrentPresetId(preset.id);
     setFilterOptions(preset.options);
-    showToast(`Switched to "${preset.name}" preset`, 'info');
+    showToast(`Preset: ${preset.name}`, 'info');
   };
 
   // Handle custom filter change
@@ -126,7 +115,7 @@ export const App: React.FC = () => {
   const handleResetFilters = () => {
     setFilterOptions(DEFAULT_FILTER_OPTIONS);
     setCurrentPresetId('doc-ready');
-    showToast('Reset to default Doc-Ready rules', 'info');
+    showToast('Reset to default rules', 'info');
   };
 
   // Load sample content
@@ -134,7 +123,7 @@ export const App: React.FC = () => {
     const sample = SAMPLES.find((s) => s.id === sampleId);
     if (sample) {
       setRawInput(sample.html);
-      showToast(`Loaded "${sample.title}" sample`, 'info');
+      showToast(`Loaded ${sample.title}`, 'info');
     }
   };
 
@@ -147,13 +136,13 @@ export const App: React.FC = () => {
   // History Actions
   const handleSelectHistoryItem = (item: HistoryItem) => {
     setRawInput(item.html);
-    showToast('Restored past clip', 'success');
+    showToast('Restored clip', 'info');
   };
 
   const handleClearHistory = () => {
     setHistory([]);
     localStorage.removeItem('pastemagic_history');
-    showToast('Cleared paste history', 'info');
+    showToast('History cleared', 'info');
   };
 
   const handleDeleteHistoryItem = (id: string) => {
@@ -165,7 +154,6 @@ export const App: React.FC = () => {
   // Global Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
-      // Escape closes modals
       if (e.key === 'Escape') {
         setShowStatsModal(false);
         setShowHistoryDrawer(false);
@@ -173,37 +161,35 @@ export const App: React.FC = () => {
         return;
       }
 
-      // Ctrl+Enter or Cmd+Enter: Copy Formatted
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault();
         if (sanitized.cleanHtml.trim()) {
           const ok = await copyRichText(sanitized.cleanHtml, sanitized.cleanText);
           if (ok) {
-            showToast('Copied formatted rich text!', 'success');
+            showToast('Copied formatted text', 'info');
           }
         }
         return;
       }
 
-      // Alt shortcuts
       if (e.altKey) {
         if (e.key.toLowerCase() === 'm') {
           e.preventDefault();
           if (sanitized.cleanMarkdown.trim()) {
             await copyPlainText(sanitized.cleanMarkdown);
-            showToast('Copied Markdown!', 'success');
+            showToast('Copied Markdown', 'info');
           }
         } else if (e.key.toLowerCase() === 'h') {
           e.preventDefault();
           if (sanitized.cleanHtml.trim()) {
             await copyPlainText(sanitized.cleanHtml);
-            showToast('Copied clean HTML!', 'success');
+            showToast('Copied HTML', 'info');
           }
         } else if (e.key.toLowerCase() === 't') {
           e.preventDefault();
           if (sanitized.cleanText.trim()) {
             await copyPlainText(sanitized.cleanText);
-            showToast('Copied plain text!', 'success');
+            showToast('Copied plain text', 'info');
           }
         } else if (e.key.toLowerCase() === 'c') {
           e.preventDefault();
@@ -217,7 +203,7 @@ export const App: React.FC = () => {
   }, [sanitized, showToast]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors font-sans">
+    <div className="min-h-screen flex flex-col bg-[#fafafa] dark:bg-[#141415] text-neutral-900 dark:text-neutral-100 transition-colors font-sans antialiased">
       {/* Top Navigation */}
       <Navbar
         darkMode={darkMode}
@@ -236,7 +222,7 @@ export const App: React.FC = () => {
         filterOptions={filterOptions}
       />
 
-      {/* Granular Filter Controls Drawer / Accordion */}
+      {/* Granular Filter Controls Drawer */}
       {showCustomFilters && (
         <FilterControls
           options={filterOptions}
@@ -247,8 +233,8 @@ export const App: React.FC = () => {
 
       {/* Main Dual-Pane Workspace */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col gap-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-          {/* Left: Raw Input Dropzone / Area */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+          {/* Left: Raw Input Dropzone */}
           <div className="h-full">
             <InputPane
               rawInput={rawInput}
@@ -259,7 +245,7 @@ export const App: React.FC = () => {
             />
           </div>
 
-          {/* Right: Sanitized Live Output & Copy CTAs */}
+          {/* Right: Sanitized Live Output */}
           <div className="h-full">
             <OutputPane
               sanitized={sanitized}
@@ -269,94 +255,76 @@ export const App: React.FC = () => {
           </div>
         </div>
 
-        {/* Feature Explainer & Comparison Section */}
-        <section className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
-          <div className="text-center max-w-2xl mx-auto mb-10">
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-              Why use PasteMagic instead of Notepad?
+        {/* Feature Comparison Section */}
+        <section className="mt-8 pt-8 border-t border-neutral-200/80 dark:border-neutral-800/80">
+          <div className="max-w-xl mx-auto text-center mb-8">
+            <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
+              Why not Notepad?
             </h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
-              Notepad is the classic workaround, but it acts like a sledgehammer—it wipes away bolding, lists, and links you actually wanted to keep.
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+              Notepad strips every styling element, including bold emphasis, lists, and links that should be kept.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Card 1: The Notepad Problem */}
-            <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-              <div className="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-950/70 text-rose-600 dark:text-rose-400 flex items-center justify-center mb-4">
-                <XCircle className="w-5 h-5" />
-              </div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-2">
-                The Notepad Sledgehammer
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Card 1 */}
+            <div className="p-4 rounded-xl bg-white dark:bg-[#19191b] border border-neutral-200/80 dark:border-neutral-800">
+              <h3 className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 mb-1.5">
+                Notepad strips everything
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                Pasting into Notepad wipes out garish colors, but it also destroys all your bullet points, bold emphasis, headings, and working hyperlinks. You end up having to manually re-format everything.
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                Pasting into plain text strips all formatting, but it also destroys lists, bold emphasis, headings, and working hyperlinks.
               </p>
             </div>
 
-            {/* Card 2: The Direct Web Paste Problem */}
-            <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-              <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/70 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-4">
-                <FileSpreadsheet className="w-5 h-5" />
-              </div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-2">
-                The Direct Paste Mess
+            {/* Card 2 */}
+            <div className="p-4 rounded-xl bg-white dark:bg-[#19191b] border border-neutral-200/80 dark:border-neutral-800">
+              <h3 className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 mb-1.5">
+                Direct paste copies noise
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                Copying directly from blogs, Word, or Google Docs brings along Comic Sans, 13.5px font sizes, highlighter yellow backgrounds, and 100-character UTM marketing trackers in your hyperlinks.
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                Copying directly from blogs or office documents brings along custom fonts, inline colors, and tracking tags in links.
               </p>
             </div>
 
-            {/* Card 3: The PasteMagic Solution */}
-            <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-900/60 shadow-xs relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl -mr-6 -mt-6"></div>
-              <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-4">
-                <CheckCircle className="w-5 h-5" />
-              </div>
-              <h3 className="text-base font-bold text-indigo-950 dark:text-indigo-100 mb-2">
-                PasteMagic Surgical Filter
+            {/* Card 3 */}
+            <div className="p-4 rounded-xl bg-white dark:bg-[#19191b] border border-neutral-200/80 dark:border-neutral-800">
+              <h3 className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 mb-1.5">
+                PasteMagic selective filter
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                Keep the structure you need (bold, italics, lists, clean tables, headings) while surgically stripping all font families, sizes, inline colors, and tracking tags in 1 millisecond.
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                Preserve structure (bold, italics, lists, clean tables, headings) while removing font families, colors, and tracking tags.
               </p>
             </div>
           </div>
 
-          {/* Workflow Badges */}
-          <div className="mt-12 p-6 rounded-2xl bg-gradient-to-r from-indigo-50 via-violet-50 to-purple-50 dark:from-slate-900 dark:via-indigo-950/40 dark:to-slate-900 border border-indigo-100 dark:border-indigo-900/40 flex flex-wrap items-center justify-around gap-4 text-center">
+          {/* Workflow Sequence */}
+          <div className="mt-8 p-4 rounded-xl bg-white dark:bg-[#19191b] border border-neutral-200/80 dark:border-neutral-800 flex flex-wrap items-center justify-around gap-4 text-center">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">
-                1
-              </div>
-              <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Copy text from web or doc
+              <span className="font-mono text-xs text-neutral-400">1</span>
+              <span className="text-xs text-neutral-700 dark:text-neutral-300">
+                Copy text from web or document
               </span>
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-400 hidden sm:block" />
+            <span className="text-neutral-300 dark:text-neutral-700 hidden sm:inline">·</span>
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">
-                2
-              </div>
-              <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Paste in PasteMagic (Ctrl+V)
+              <span className="font-mono text-xs text-neutral-400">2</span>
+              <span className="text-xs text-neutral-700 dark:text-neutral-300">
+                Paste into PasteMagic
               </span>
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-400 hidden sm:block" />
+            <span className="text-neutral-300 dark:text-neutral-700 hidden sm:inline">·</span>
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">
-                3
-              </div>
-              <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Click Copy Formatted (Ctrl+Enter)
+              <span className="font-mono text-xs text-neutral-400">3</span>
+              <span className="text-xs text-neutral-700 dark:text-neutral-300">
+                Click Copy Formatted
               </span>
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-400 hidden sm:block" />
+            <span className="text-neutral-300 dark:text-neutral-700 hidden sm:inline">·</span>
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">
-                4
-              </div>
-              <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Paste pristine formatted text!
+              <span className="font-mono text-xs text-neutral-400">4</span>
+              <span className="text-xs text-neutral-700 dark:text-neutral-300">
+                Paste clean text into your document
               </span>
             </div>
           </div>
@@ -364,31 +332,29 @@ export const App: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 dark:border-slate-800 py-6 px-4 text-center text-xs text-slate-400 dark:text-slate-500 bg-white/50 dark:bg-slate-900/50">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      <footer className="border-t border-neutral-200/80 dark:border-neutral-800/80 py-4 px-4 text-center text-xs text-neutral-400 bg-white dark:bg-[#141415]">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-slate-700 dark:text-slate-300">PasteMagic</span>
-            <span>•</span>
-            <span>Fast, Private & Smart Clipboard Styling Sanitizer</span>
+            <span className="font-medium text-neutral-700 dark:text-neutral-300">PasteMagic</span>
+            <span>·</span>
+            <span>Clipboard style sanitizer</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setShowShortcutsModal(true)}
-              className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+              className="hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors cursor-pointer"
             >
               Shortcuts
             </button>
-            <span>•</span>
+            <span>·</span>
             <button
               onClick={() => setShowStatsModal(true)}
-              className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+              className="hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors cursor-pointer"
             >
-              Sanitizer Specs
+              Report
             </button>
-            <span>•</span>
-            <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-              100% Client-Side Privacy
-            </span>
+            <span>·</span>
+            <span>Local processing only</span>
           </div>
         </div>
       </footer>
@@ -421,4 +387,3 @@ export const App: React.FC = () => {
     </div>
   );
 };
-

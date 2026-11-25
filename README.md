@@ -99,6 +99,31 @@ Using **Notepad** is the old-school workaround, but it acts like a sledgehammer:
 
 ---
 
+## ☁️ Deploy to Vercel
+
+The project is pre-configured with `vercel.json` and `.vercelignore` for zero-configuration deployment to Vercel.
+
+### Option 1: Via Vercel Dashboard (Recommended)
+1. Push this repository to GitHub, GitLab, or Bitbucket.
+2. Go to [vercel.com/new](https://vercel.com/new) and import your repository.
+3. Vercel automatically detects **Vite**:
+   - **Framework Preset**: `Vite`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+4. Click **Deploy**.
+
+### Option 2: Via Vercel CLI
+Run the following in the project root:
+```bash
+npx vercel
+```
+For production release:
+```bash
+npx vercel --prod
+```
+
+---
+
 ## 🛠️ Tech Stack & Architecture
 
 - **UI Framework**: React 19 + TypeScript

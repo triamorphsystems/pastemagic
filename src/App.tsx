@@ -279,12 +279,10 @@ export const App: React.FC = () => {
 
       {/* Main Dual-Pane Workspace */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col gap-4">
-        {/* CHECKBOX OPTIONS ON TOP OF THE BOX */}
+        {/* Core essential checkboxes on top of the box */}
         <QuickOptionsBar
           options={filterOptions}
           onChange={handleCustomFilterChange}
-          currentPresetId={currentPresetId}
-          onSelectPreset={handleSelectPreset}
           onReset={handleResetFilters}
           showAllRules={showCustomFilters}
           onToggleAllRules={() => setShowCustomFilters((prev) => !prev)}

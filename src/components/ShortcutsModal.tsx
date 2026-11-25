@@ -7,13 +7,14 @@ interface ShortcutsModalProps {
 
 export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ onClose }) => {
   const shortcuts = [
-    { key: 'Ctrl + V / ⌘ + V', desc: 'Paste into raw input' },
-    { key: 'Ctrl + Enter / ⌘ + Enter', desc: 'Copy formatted rich text' },
+    { key: 'Ctrl + V / ⌘ + V', desc: 'Auto-insert & clean from anywhere on page' },
+    { key: 'Ctrl + C / ⌘ + C', desc: 'Auto-copy clean version to clipboard' },
+    { key: 'Ctrl + Enter / ⌘ + Enter', desc: 'Copy rich formatted text' },
     { key: 'Alt + M', desc: 'Copy clean Markdown' },
     { key: 'Alt + H', desc: 'Copy clean HTML' },
     { key: 'Alt + T', desc: 'Copy plain text' },
-    { key: 'Alt + C', desc: 'Clear raw input' },
-    { key: 'Esc', desc: 'Close open dialogs' },
+    { key: 'Alt + C', desc: 'Clear input' },
+    { key: 'Esc', desc: 'Close dialogs and drawers' },
   ];
 
   return (

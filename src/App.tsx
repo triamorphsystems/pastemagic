@@ -3,9 +3,9 @@ import { FilterOptions, SanitizerResult } from './types';
 import { DEFAULT_FILTER_OPTIONS, Preset } from './utils/presets';
 import { sanitizeContent } from './utils/sanitizer';
 import { SAMPLES } from './utils/samples';
-import { copyRichText, copyPlainText } from './utils/clipboard';
+import { copyRichText, copyPlainText, readClipboard } from './utils/clipboard';
 import { Navbar } from './components/Navbar';
-import { PresetsBar } from './components/PresetsBar';
+import { QuickOptionsBar } from './components/QuickOptionsBar';
 import { FilterControls } from './components/FilterControls';
 import { InputPane } from './components/InputPane';
 import { OutputPane } from './components/OutputPane';
@@ -15,13 +15,12 @@ import { ShortcutsModal } from './components/ShortcutsModal';
 import { Toast, ToastMessage } from './components/Toast';
 
 export const App: React.FC = () => {
-  // Theme state
+  // Theme state: default to clean light mode unless dark is explicitly saved
   const [darkMode, setDarkMode] = useState<boolean>(() => {
-    return (
-      localStorage.getItem('pastemagic_theme') === 'dark' ||
-      (!('pastemagic_theme' in localStorage) &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches)
-    );
+    const saved = localStorage.getItem('pastemagic_theme');
+    if (saved === 'dark') return true;
+    if (saved === 'light') return false;
+    return false; // Crisp light mode by default
   });
 
   useEffect(() => {
@@ -151,9 +150,35 @@ export const App: React.FC = () => {
     localStorage.setItem('pastemagic_history', JSON.stringify(updated));
   };
 
-  // Global Keyboard Shortcuts
+  // AUTO INSERT & AUTO COPY: Global Window Listeners
+  // 1. Listen for global paste events anywhere on page
+  useEffect(() => {
+    const handleGlobalPaste = (e: ClipboardEvent) => {
+      // If user is pasting into an explicit input or textarea element (like a modal search), allow default
+      const activeTag = (document.activeElement?.tagName || '').toLowerCase();
+      if (activeTag === 'input' || activeTag === 'textarea') {
+        return;
+      }
+
+      const html = e.clipboardData?.getData('text/html') || '';
+      const text = e.clipboardData?.getData('text/plain') || '';
+      const content = html.trim() ? html : text;
+
+      if (content.trim()) {
+        e.preventDefault();
+        setRawInput(content);
+        showToast('Pasted & cleaned automatically (Ctrl+V)', 'info');
+      }
+    };
+
+    window.addEventListener('paste', handleGlobalPaste);
+    return () => window.removeEventListener('paste', handleGlobalPaste);
+  }, [showToast]);
+
+  // 2. Global Keyboard Shortcuts & Auto-Copy on Ctrl+C / Cmd+C
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
+      // Close modals on Escape
       if (e.key === 'Escape') {
         setShowStatsModal(false);
         setShowHistoryDrawer(false);
@@ -161,17 +186,56 @@ export const App: React.FC = () => {
         return;
       }
 
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      const isModifier = e.ctrlKey || e.metaKey;
+
+      // Auto-Copy on Ctrl+C / Cmd+C (when no text is selected on screen)
+      if (isModifier && e.key.toLowerCase() === 'c') {
+        const selection = window.getSelection()?.toString().trim();
+        // If the user hasn't selected specific text on the page, copy the clean version!
+        if (!selection && sanitized.cleanHtml.trim()) {
+          e.preventDefault();
+          const ok = await copyRichText(sanitized.cleanHtml, sanitized.cleanText);
+          if (ok) {
+            showToast('Clean version copied automatically (Ctrl+C)', 'info');
+          }
+          return;
+        }
+      }
+
+      // Fallback Auto-Paste trigger on Ctrl+V if paste event wasn't captured
+      if (isModifier && e.key.toLowerCase() === 'v') {
+        // If not focused on an input/textarea, try reading clipboard directly
+        const activeTag = (document.activeElement?.tagName || '').toLowerCase();
+        if (activeTag !== 'input' && activeTag !== 'textarea') {
+          // Let native paste event fire first, but if clipboard API is available, support it
+          try {
+            const clip = await readClipboard();
+            if (clip && (clip.html.trim() || clip.text.trim())) {
+              const content = clip.html.trim() ? clip.html : clip.text;
+              if (content !== rawInput) {
+                setRawInput(content);
+                showToast('Pasted & cleaned automatically (Ctrl+V)', 'info');
+              }
+            }
+          } catch {
+            // Native paste event handler will catch it
+          }
+        }
+      }
+
+      // Ctrl+Enter: Explicit Copy Formatted
+      if (isModifier && e.key === 'Enter') {
         e.preventDefault();
         if (sanitized.cleanHtml.trim()) {
           const ok = await copyRichText(sanitized.cleanHtml, sanitized.cleanText);
           if (ok) {
-            showToast('Copied formatted text', 'info');
+            showToast('Copied formatted rich text', 'info');
           }
         }
         return;
       }
 
+      // Alt shortcuts
       if (e.altKey) {
         if (e.key.toLowerCase() === 'm') {
           e.preventDefault();
@@ -200,7 +264,7 @@ export const App: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [sanitized, showToast]);
+  }, [sanitized, rawInput, showToast]);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#fafafa] dark:bg-[#141415] text-neutral-900 dark:text-neutral-100 transition-colors font-sans antialiased">
@@ -213,26 +277,29 @@ export const App: React.FC = () => {
         historyCount={history.length}
       />
 
-      {/* Presets Bar */}
-      <PresetsBar
-        currentPresetId={currentPresetId}
-        onSelectPreset={handleSelectPreset}
-        showCustomFilters={showCustomFilters}
-        onToggleCustomFilters={() => setShowCustomFilters((prev) => !prev)}
-        filterOptions={filterOptions}
-      />
-
-      {/* Granular Filter Controls Drawer */}
-      {showCustomFilters && (
-        <FilterControls
+      {/* Main Dual-Pane Workspace */}
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col gap-4">
+        {/* CHECKBOX OPTIONS ON TOP OF THE BOX */}
+        <QuickOptionsBar
           options={filterOptions}
           onChange={handleCustomFilterChange}
+          currentPresetId={currentPresetId}
+          onSelectPreset={handleSelectPreset}
           onReset={handleResetFilters}
+          showAllRules={showCustomFilters}
+          onToggleAllRules={() => setShowCustomFilters((prev) => !prev)}
         />
-      )}
 
-      {/* Main Dual-Pane Workspace */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col gap-6">
+        {/* Detailed Granular Filter Controls (if expanded) */}
+        {showCustomFilters && (
+          <FilterControls
+            options={filterOptions}
+            onChange={handleCustomFilterChange}
+            onReset={handleResetFilters}
+          />
+        )}
+
+        {/* Dual Pane Layout: Input on left, Clean Output on right */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
           {/* Left: Raw Input Dropzone */}
           <div className="h-full">
@@ -256,8 +323,8 @@ export const App: React.FC = () => {
         </div>
 
         {/* Feature Comparison Section */}
-        <section className="mt-8 pt-8 border-t border-neutral-200/80 dark:border-neutral-800/80">
-          <div className="max-w-xl mx-auto text-center mb-8">
+        <section className="mt-6 pt-6 border-t border-neutral-200/80 dark:border-neutral-800/80">
+          <div className="max-w-xl mx-auto text-center mb-6">
             <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
               Why not Notepad?
             </h2>
@@ -299,32 +366,32 @@ export const App: React.FC = () => {
           </div>
 
           {/* Workflow Sequence */}
-          <div className="mt-8 p-4 rounded-xl bg-white dark:bg-[#19191b] border border-neutral-200/80 dark:border-neutral-800 flex flex-wrap items-center justify-around gap-4 text-center">
+          <div className="mt-6 p-3.5 rounded-xl bg-white dark:bg-[#19191b] border border-neutral-200/80 dark:border-neutral-800 flex flex-wrap items-center justify-around gap-3 text-center">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs text-neutral-400">1</span>
+              <span className="font-mono text-xs text-neutral-400 font-bold">1</span>
               <span className="text-xs text-neutral-700 dark:text-neutral-300">
-                Copy text from web or document
+                Press <kbd className="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 font-mono text-[11px]">Ctrl+V</kbd> anywhere on page to paste
               </span>
             </div>
             <span className="text-neutral-300 dark:text-neutral-700 hidden sm:inline">·</span>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs text-neutral-400">2</span>
+              <span className="font-mono text-xs text-neutral-400 font-bold">2</span>
               <span className="text-xs text-neutral-700 dark:text-neutral-300">
-                Paste into PasteMagic
+                Options filter content live
               </span>
             </div>
             <span className="text-neutral-300 dark:text-neutral-700 hidden sm:inline">·</span>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs text-neutral-400">3</span>
+              <span className="font-mono text-xs text-neutral-400 font-bold">3</span>
               <span className="text-xs text-neutral-700 dark:text-neutral-300">
-                Click Copy Formatted
+                Press <kbd className="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 font-mono text-[11px]">Ctrl+C</kbd> to copy clean version
               </span>
             </div>
             <span className="text-neutral-300 dark:text-neutral-700 hidden sm:inline">·</span>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs text-neutral-400">4</span>
+              <span className="font-mono text-xs text-neutral-400 font-bold">4</span>
               <span className="text-xs text-neutral-700 dark:text-neutral-300">
-                Paste clean text into your document
+                Paste cleanly into Docs or Word
               </span>
             </div>
           </div>
@@ -354,7 +421,7 @@ export const App: React.FC = () => {
               Report
             </button>
             <span>·</span>
-            <span>Local processing only</span>
+            <span>100% Client-side privacy</span>
           </div>
         </div>
       </footer>

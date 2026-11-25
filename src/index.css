@@ -2,26 +2,8 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-@layer base {
-  :root {
-    --bg-page: #fafafa;
-    --bg-card: #ffffff;
-    --bg-raised: #f4f4f5;
-    --text-primary: #171717;
-    --text-secondary: #525252;
-    --text-muted: #737373;
-    --border-hairline: rgba(23, 23, 23, 0.08);
-  }
-
-  .dark {
-    --bg-page: #141415;
-    --bg-card: #19191b;
-    --bg-raised: #232325;
-    --text-primary: #ededed;
-    --text-secondary: #a1a1a6;
-    --text-muted: #85858b;
-    --border-hairline: rgba(237, 237, 237, 0.08);
-  }
+body {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* Custom scrollbars */
@@ -51,7 +33,7 @@
 /* Document preview typography */
 .sanitized-preview {
   color: inherit;
-  line-height: 1.6;
+  line-height: 1.65;
   font-size: 0.9375rem;
 }
 
@@ -102,45 +84,45 @@
 }
 
 .sanitized-preview a {
-  color: #2563eb;
+  color: #4f46e5;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
 .dark .sanitized-preview a {
-  color: #60a5fa;
+  color: #818cf8;
 }
 
 .sanitized-preview blockquote {
-  border-left: 3px solid #737373;
+  border-left: 3px solid #cbd5e1;
   padding-left: 0.75rem;
   margin-top: 0.75rem;
   margin-bottom: 0.75rem;
-  color: #525252;
+  color: #475569;
 }
 
 .dark .sanitized-preview blockquote {
-  border-left-color: #525252;
-  color: #a1a1a6;
+  border-left-color: #475569;
+  color: #94a3b8;
 }
 
 .sanitized-preview code {
-  background-color: rgba(115, 115, 115, 0.12);
-  padding: 0.125rem 0.25rem;
+  background-color: rgba(148, 163, 184, 0.15);
+  padding: 0.125rem 0.3rem;
   border-radius: 0.25rem;
   font-size: 0.85em;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
 }
 
 .sanitized-preview pre {
-  background-color: #19191b;
-  color: #ededed;
-  padding: 0.75rem 1rem;
+  background-color: #0f172a;
+  color: #f8fafc;
+  padding: 0.875rem 1rem;
   border-radius: 0.5rem;
   overflow-x: auto;
   margin-top: 0.75rem;
   margin-bottom: 0.75rem;
-  border: 1px solid rgba(237, 237, 237, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .sanitized-preview pre code {
@@ -159,18 +141,18 @@
 
 .sanitized-preview th,
 .sanitized-preview td {
-  border: 1px solid rgba(115, 115, 115, 0.2);
+  border: 1px solid rgba(148, 163, 184, 0.25);
   padding: 0.5rem 0.75rem;
   text-align: left;
 }
 
 .sanitized-preview th {
-  background-color: rgba(115, 115, 115, 0.06);
+  background-color: rgba(148, 163, 184, 0.08);
   font-weight: 500;
 }
 
 .sanitized-preview hr {
   margin: 1.25rem 0;
   border: 0;
-  border-top: 1px solid rgba(115, 115, 115, 0.15);
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
 }

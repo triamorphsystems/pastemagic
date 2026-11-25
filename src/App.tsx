@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { FilterOptions, SanitizerResult } from './types';
-import { DEFAULT_FILTER_OPTIONS, Preset } from './utils/presets';
+import { DEFAULT_FILTER_OPTIONS } from './utils/presets';
 import { sanitizeContent } from './utils/sanitizer';
 import { SAMPLES } from './utils/samples';
 import { copyRichText, copyPlainText, readClipboard } from './utils/clipboard';
@@ -15,12 +15,12 @@ import { ShortcutsModal } from './components/ShortcutsModal';
 import { Toast, ToastMessage } from './components/Toast';
 
 export const App: React.FC = () => {
-  // Theme state: default to clean light mode unless dark is explicitly saved
+  // Theme state: default to clean light mode
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('pastemagic_theme');
     if (saved === 'dark') return true;
     if (saved === 'light') return false;
-    return false; // Crisp light mode by default
+    return false;
   });
 
   useEffect(() => {
@@ -33,9 +33,8 @@ export const App: React.FC = () => {
     }
   }, [darkMode]);
 
-  // Core filter options & presets
+  // Core filter options
   const [filterOptions, setFilterOptions] = useState<FilterOptions>(DEFAULT_FILTER_OPTIONS);
-  const [currentPresetId, setCurrentPresetId] = useState<string>('doc-ready');
   const [showCustomFilters, setShowCustomFilters] = useState<boolean>(false);
 
   // Raw input & sanitization
@@ -97,24 +96,15 @@ export const App: React.FC = () => {
     return () => clearTimeout(timer);
   }, [rawInput, sanitized.cleanText]);
 
-  // Handle Preset selection
-  const handleSelectPreset = (preset: Preset) => {
-    setCurrentPresetId(preset.id);
-    setFilterOptions(preset.options);
-    showToast(`Preset: ${preset.name}`, 'info');
-  };
-
   // Handle custom filter change
   const handleCustomFilterChange = (newOptions: FilterOptions) => {
     setFilterOptions(newOptions);
-    setCurrentPresetId('custom');
   };
 
   // Reset filters
   const handleResetFilters = () => {
     setFilterOptions(DEFAULT_FILTER_OPTIONS);
-    setCurrentPresetId('doc-ready');
-    showToast('Reset to default rules', 'info');
+    showToast('Reset to default options', 'info');
   };
 
   // Load sample content
@@ -151,10 +141,8 @@ export const App: React.FC = () => {
   };
 
   // AUTO INSERT & AUTO COPY: Global Window Listeners
-  // 1. Listen for global paste events anywhere on page
   useEffect(() => {
     const handleGlobalPaste = (e: ClipboardEvent) => {
-      // If user is pasting into an explicit input or textarea element (like a modal search), allow default
       const activeTag = (document.activeElement?.tagName || '').toLowerCase();
       if (activeTag === 'input' || activeTag === 'textarea') {
         return;
@@ -167,7 +155,7 @@ export const App: React.FC = () => {
       if (content.trim()) {
         e.preventDefault();
         setRawInput(content);
-        showToast('Pasted & cleaned automatically (Ctrl+V)', 'info');
+        showToast('Pasted & cleaned automatically', 'info');
       }
     };
 
@@ -175,10 +163,9 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('paste', handleGlobalPaste);
   }, [showToast]);
 
-  // 2. Global Keyboard Shortcuts & Auto-Copy on Ctrl+C / Cmd+C
+  // Global Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
-      // Close modals on Escape
       if (e.key === 'Escape') {
         setShowStatsModal(false);
         setShowHistoryDrawer(false);
@@ -191,12 +178,11 @@ export const App: React.FC = () => {
       // Auto-Copy on Ctrl+C / Cmd+C (when no text is selected on screen)
       if (isModifier && e.key.toLowerCase() === 'c') {
         const selection = window.getSelection()?.toString().trim();
-        // If the user hasn't selected specific text on the page, copy the clean version!
         if (!selection && sanitized.cleanHtml.trim()) {
           e.preventDefault();
           const ok = await copyRichText(sanitized.cleanHtml, sanitized.cleanText);
           if (ok) {
-            showToast('Clean version copied automatically (Ctrl+C)', 'info');
+            showToast('Cleaned content copied (Ctrl+C)', 'info');
           }
           return;
         }
@@ -204,21 +190,19 @@ export const App: React.FC = () => {
 
       // Fallback Auto-Paste trigger on Ctrl+V if paste event wasn't captured
       if (isModifier && e.key.toLowerCase() === 'v') {
-        // If not focused on an input/textarea, try reading clipboard directly
         const activeTag = (document.activeElement?.tagName || '').toLowerCase();
         if (activeTag !== 'input' && activeTag !== 'textarea') {
-          // Let native paste event fire first, but if clipboard API is available, support it
           try {
             const clip = await readClipboard();
             if (clip && (clip.html.trim() || clip.text.trim())) {
               const content = clip.html.trim() ? clip.html : clip.text;
               if (content !== rawInput) {
                 setRawInput(content);
-                showToast('Pasted & cleaned automatically (Ctrl+V)', 'info');
+                showToast('Pasted & cleaned automatically', 'info');
               }
             }
           } catch {
-            // Native paste event handler will catch it
+            // Handled by global paste
           }
         }
       }
@@ -229,7 +213,7 @@ export const App: React.FC = () => {
         if (sanitized.cleanHtml.trim()) {
           const ok = await copyRichText(sanitized.cleanHtml, sanitized.cleanText);
           if (ok) {
-            showToast('Copied formatted rich text', 'info');
+            showToast('Copied formatted text', 'info');
           }
         }
         return;
@@ -267,7 +251,7 @@ export const App: React.FC = () => {
   }, [sanitized, rawInput, showToast]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#fafafa] dark:bg-[#141415] text-neutral-900 dark:text-neutral-100 transition-colors font-sans antialiased">
+    <div className="min-h-screen flex flex-col bg-[#f8fafc] dark:bg-[#0e1117] text-slate-900 dark:text-neutral-100 transition-colors font-sans antialiased">
       {/* Top Navigation */}
       <Navbar
         darkMode={darkMode}
@@ -277,8 +261,8 @@ export const App: React.FC = () => {
         historyCount={history.length}
       />
 
-      {/* Main Dual-Pane Workspace */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col gap-4">
+      {/* Main Workspace */}
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 flex flex-col gap-3.5">
         {/* Core essential checkboxes on top of the box */}
         <QuickOptionsBar
           options={filterOptions}
@@ -298,7 +282,7 @@ export const App: React.FC = () => {
         )}
 
         {/* Dual Pane Layout: Input on left, Clean Output on right */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch flex-1">
           {/* Left: Raw Input Dropzone */}
           <div className="h-full">
             <InputPane
@@ -320,109 +304,36 @@ export const App: React.FC = () => {
           </div>
         </div>
 
-        {/* Feature Comparison Section */}
-        <section className="mt-6 pt-6 border-t border-neutral-200/80 dark:border-neutral-800/80">
-          <div className="max-w-xl mx-auto text-center mb-6">
-            <h2 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
-              Why not Notepad?
-            </h2>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-              Notepad strips every styling element, including bold emphasis, lists, and links that should be kept.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Card 1 */}
-            <div className="p-4 rounded-xl bg-white dark:bg-[#19191b] border border-neutral-200/80 dark:border-neutral-800">
-              <h3 className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 mb-1.5">
-                Notepad strips everything
-              </h3>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
-                Pasting into plain text strips all formatting, but it also destroys lists, bold emphasis, headings, and working hyperlinks.
-              </p>
-            </div>
-
-            {/* Card 2 */}
-            <div className="p-4 rounded-xl bg-white dark:bg-[#19191b] border border-neutral-200/80 dark:border-neutral-800">
-              <h3 className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 mb-1.5">
-                Direct paste copies noise
-              </h3>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
-                Copying directly from blogs or office documents brings along custom fonts, inline colors, and tracking tags in links.
-              </p>
-            </div>
-
-            {/* Card 3 */}
-            <div className="p-4 rounded-xl bg-white dark:bg-[#19191b] border border-neutral-200/80 dark:border-neutral-800">
-              <h3 className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 mb-1.5">
-                PasteMagic selective filter
-              </h3>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
-                Preserve structure (bold, italics, lists, clean tables, headings) while removing font families, colors, and tracking tags.
-              </p>
-            </div>
-          </div>
-
-          {/* Workflow Sequence */}
-          <div className="mt-6 p-3.5 rounded-xl bg-white dark:bg-[#19191b] border border-neutral-200/80 dark:border-neutral-800 flex flex-wrap items-center justify-around gap-3 text-center">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-xs text-neutral-400 font-bold">1</span>
-              <span className="text-xs text-neutral-700 dark:text-neutral-300">
-                Press <kbd className="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 font-mono text-[11px]">Ctrl+V</kbd> anywhere on page to paste
-              </span>
-            </div>
-            <span className="text-neutral-300 dark:text-neutral-700 hidden sm:inline">·</span>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-xs text-neutral-400 font-bold">2</span>
-              <span className="text-xs text-neutral-700 dark:text-neutral-300">
-                Options filter content live
-              </span>
-            </div>
-            <span className="text-neutral-300 dark:text-neutral-700 hidden sm:inline">·</span>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-xs text-neutral-400 font-bold">3</span>
-              <span className="text-xs text-neutral-700 dark:text-neutral-300">
-                Press <kbd className="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 font-mono text-[11px]">Ctrl+C</kbd> to copy clean version
-              </span>
-            </div>
-            <span className="text-neutral-300 dark:text-neutral-700 hidden sm:inline">·</span>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-xs text-neutral-400 font-bold">4</span>
-              <span className="text-xs text-neutral-700 dark:text-neutral-300">
-                Paste cleanly into Docs or Word
-              </span>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t border-neutral-200/80 dark:border-neutral-800/80 py-4 px-4 text-center text-xs text-neutral-400 bg-white dark:bg-[#141415]">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-neutral-700 dark:text-neutral-300">PasteMagic</span>
+        {/* Quiet Quick Guide Bar */}
+        <div className="py-2.5 px-4 rounded-xl bg-white dark:bg-[#16181d] border border-slate-200/70 dark:border-neutral-800/70 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500 dark:text-neutral-400">
+          <div className="flex flex-wrap items-center gap-4">
+            <span className="flex items-center gap-1.5 font-mono">
+              <kbd className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 text-[10px] text-slate-700 dark:text-neutral-300">
+                Ctrl+V
+              </kbd>
+              <span>anywhere auto-pastes</span>
+            </span>
             <span>·</span>
-            <span>Clipboard style sanitizer</span>
+            <span className="flex items-center gap-1.5 font-mono">
+              <kbd className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 text-[10px] text-slate-700 dark:text-neutral-300">
+                Ctrl+C
+              </kbd>
+              <span>auto-copies clean formatted</span>
+            </span>
           </div>
-          <div className="flex items-center gap-3">
+
+          <div className="flex items-center gap-3 text-slate-400 dark:text-neutral-500">
+            <span>100% Client-side · Private</span>
+            <span>·</span>
             <button
               onClick={() => setShowShortcutsModal(true)}
-              className="hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors cursor-pointer"
+              className="hover:text-slate-800 dark:hover:text-neutral-200 underline cursor-pointer"
             >
               Shortcuts
             </button>
-            <span>·</span>
-            <button
-              onClick={() => setShowStatsModal(true)}
-              className="hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors cursor-pointer"
-            >
-              Report
-            </button>
-            <span>·</span>
-            <span>100% Client-side privacy</span>
           </div>
         </div>
-      </footer>
+      </main>
 
       {/* Modals & Trays */}
       {showStatsModal && (

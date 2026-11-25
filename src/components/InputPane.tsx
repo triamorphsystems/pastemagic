@@ -2,7 +2,8 @@ import React, { useRef, useEffect } from 'react';
 import {
   Clipboard,
   Trash2,
-  ArrowDown,
+  FileText,
+  Sparkles,
 } from 'lucide-react';
 import { SAMPLES } from '../utils/samples';
 import { readClipboard } from '../utils/clipboard';
@@ -37,7 +38,7 @@ export const InputPane: React.FC<InputPaneProps> = ({
 
     const contentToUse = html && html.trim() ? html : text;
     onInputChange(contentToUse);
-    onShowToast('Content pasted', 'info');
+    onShowToast('Pasted content', 'info');
   };
 
   const handleManualPasteClick = async () => {
@@ -70,16 +71,16 @@ export const InputPane: React.FC<InputPaneProps> = ({
     .filter(Boolean).length;
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-[#19191b] border border-neutral-200/80 dark:border-neutral-800/80 rounded-xl overflow-hidden transition-colors">
+    <div className="flex flex-col h-full bg-white dark:bg-[#16181d] border border-slate-200/90 dark:border-neutral-800/90 rounded-2xl shadow-xs overflow-hidden transition-colors">
       {/* Pane Header */}
-      <div className="px-4 py-2.5 border-b border-neutral-200/80 dark:border-neutral-800/80 bg-neutral-50/50 dark:bg-neutral-900/30 flex items-center justify-between gap-2">
+      <div className="px-4 py-2.5 border-b border-slate-100 dark:border-neutral-800/80 bg-slate-50/50 dark:bg-neutral-900/30 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-neutral-800 dark:text-neutral-200">
-            Raw input
+          <span className="text-xs font-semibold text-slate-800 dark:text-neutral-200">
+            Raw Input
           </span>
           {rawInput && (
-            <span className="text-[11px] text-neutral-500 dark:text-neutral-400 font-mono">
-              {isHtml ? 'HTML' : 'Plain'}
+            <span className="text-[11px] text-slate-500 dark:text-neutral-400 font-mono">
+              ({isHtml ? 'HTML' : 'Text'})
             </span>
           )}
         </div>
@@ -95,10 +96,10 @@ export const InputPane: React.FC<InputPaneProps> = ({
               }
             }}
             defaultValue=""
-            className="text-xs bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 rounded-md px-2 py-1 cursor-pointer hover:border-neutral-400 focus:outline-none"
+            className="text-xs bg-white dark:bg-neutral-800 text-slate-700 dark:text-neutral-300 border border-slate-200 dark:border-neutral-700 rounded-lg px-2 py-1 cursor-pointer hover:border-slate-400 focus:outline-none"
           >
             <option value="" disabled>
-              Sample text
+              Load sample...
             </option>
             {SAMPLES.map((s) => (
               <option key={s.id} value={s.id}>
@@ -110,7 +111,7 @@ export const InputPane: React.FC<InputPaneProps> = ({
           {/* Paste Button */}
           <button
             onClick={handleManualPasteClick}
-            className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-md text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer transition-colors"
+            className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg text-slate-700 dark:text-neutral-300 border border-slate-200 dark:border-neutral-700 hover:bg-slate-100 dark:hover:bg-neutral-800 cursor-pointer transition-colors"
             title="Paste from clipboard"
           >
             <Clipboard className="w-3.5 h-3.5 stroke-[1.75]" />
@@ -121,7 +122,7 @@ export const InputPane: React.FC<InputPaneProps> = ({
           {rawInput && (
             <button
               onClick={onClear}
-              className="p-1 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-md transition-colors cursor-pointer"
+              className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-neutral-200 rounded-lg transition-colors cursor-pointer"
               title="Clear input"
             >
               <Trash2 className="w-3.5 h-3.5 stroke-[1.75]" />
@@ -131,21 +132,45 @@ export const InputPane: React.FC<InputPaneProps> = ({
       </div>
 
       {/* Editor Body */}
-      <div className="relative flex-1 p-4 overflow-y-auto min-h-[360px] max-h-[600px]">
+      <div className="relative flex-1 p-4 sm:p-5 overflow-y-auto min-h-[380px] max-h-[620px]">
         {!rawInput && (
           <div
             onClick={() => editableRef.current?.focus()}
             className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center cursor-text select-none"
           >
-            <div className="w-10 h-10 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-400 dark:text-neutral-500 mb-3">
-              <ArrowDown className="w-4 h-4 stroke-[1.75]" />
+            <div className="w-11 h-11 rounded-xl bg-slate-100 dark:bg-neutral-800/70 flex items-center justify-center text-slate-400 dark:text-neutral-400 mb-3">
+              <FileText className="w-5 h-5 stroke-[1.75]" />
             </div>
-            <p className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
-              Paste copied text here
+            <p className="text-sm font-medium text-slate-800 dark:text-neutral-200">
+              Paste your copied text here
             </p>
-            <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1 max-w-xs">
-              Press <kbd className="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 font-mono text-[11px]">Ctrl+V</kbd> or <kbd className="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 font-mono text-[11px]">⌘+V</kbd>
+            <p className="text-xs text-slate-400 dark:text-neutral-500 mt-1 max-w-xs">
+              Press <kbd className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 font-mono text-[11px] text-slate-600 dark:text-neutral-300">Ctrl+V</kbd> anywhere on this page
             </p>
+            <div className="mt-4 flex items-center gap-2 text-xs text-slate-400">
+              <span>Or try:</span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onLoadSample('messy-article');
+                }}
+                className="text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer font-medium"
+              >
+                Blog article
+              </button>
+              <span>·</span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onLoadSample('word-doc');
+                }}
+                className="text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer font-medium"
+              >
+                Word doc
+              </button>
+            </div>
           </div>
         )}
 
@@ -154,19 +179,19 @@ export const InputPane: React.FC<InputPaneProps> = ({
           contentEditable
           onPaste={handlePasteEvent}
           onInput={handleInput}
-          className="min-h-full text-xs text-neutral-800 dark:text-neutral-200 outline-none whitespace-pre-wrap break-words font-sans leading-relaxed"
+          className="min-h-full text-sm text-slate-800 dark:text-neutral-200 outline-none whitespace-pre-wrap break-words font-sans leading-relaxed"
           tabIndex={0}
         />
       </div>
 
       {/* Pane Footer Stats */}
-      <div className="px-4 py-2 border-t border-neutral-100 dark:border-neutral-800/80 bg-neutral-50/30 dark:bg-neutral-900/20 flex items-center justify-between text-[11px] text-neutral-400 dark:text-neutral-500 font-mono">
+      <div className="px-4 py-2 border-t border-slate-100 dark:border-neutral-800/80 bg-slate-50/30 dark:bg-neutral-900/20 flex items-center justify-between text-[11px] text-slate-400 dark:text-neutral-500 font-mono">
         <div className="flex items-center gap-2 tabular-nums">
           <span>{inputLength.toLocaleString()} chars</span>
           <span>·</span>
           <span>{wordCount.toLocaleString()} words</span>
         </div>
-        <span className="text-[11px] text-neutral-400">Preserves original tags for filtering</span>
+        <span>Original input format</span>
       </div>
     </div>
   );

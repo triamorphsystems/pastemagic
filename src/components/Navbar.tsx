@@ -32,14 +32,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Sparkles className="w-4 h-4 stroke-[2]" />
           </div>
           <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-sm tracking-tight text-slate-900 dark:text-neutral-100">
-                PasteMagic
-              </span>
-              <span className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 dark:bg-indigo-950/70 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-900/60 font-mono">
-                v1.1
-              </span>
-            </div>
+            <span className="font-semibold text-sm tracking-tight text-slate-900 dark:text-neutral-100">
+              PasteMagic
+            </span>
             <span className="text-[11px] text-slate-500 dark:text-neutral-400">
               Paste without unwanted styling
             </span>
